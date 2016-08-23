@@ -323,6 +323,36 @@ END
 }
 
 ##
+## Adds properties to guacamole.properties which select the HMAC
+## authentication provider.
+##
+associate_hmac() {
+
+    # Verify required parameters are present
+    if [ -z "$HMAC_SECRET" ]; then
+        cat <<END
+FATAL: Missing required environment variables
+-------------------------------------------------------------------------------
+If using HMAC authentication, you must provide the following environment
+variables:
+
+    HMAC_SECRET        The shared token used to sign messages.
+END
+        exit 1;
+    fi
+
+    # Update config file
+    set_property          "auth-provider"        "com.stephensugden.guacamole.net.hmac.HmacAuthenticationProvider"
+    set_property          "secret-key"           "$HMAC_SECRET"
+    set_property          "timestamp-age-limit"  "3024000000"
+
+    # Add required .jar files to GUACAMOLE_EXT
+    ln -s /opt/guacamole/hmac/guacamole-auth-*.jar "$GUACAMOLE_EXT"
+
+}
+
+
+##
 ## Starts Guacamole under Tomcat, replacing the current process with the
 ## Tomcat process. As the current process will be replaced, this MUST be the
 ## last function run within the script.
@@ -386,6 +416,12 @@ fi
 if [ -n "$LDAP_HOSTNAME" ]; then
     associate_ldap
     INSTALLED_AUTH="$INSTALLED_AUTH ldap"
+fi
+
+# use hmac tokens if specified
+if [ -n "$HMAC_SECRET" ]; then
+    associate_hmac
+    INSTALLED_AUTH="$INSTALLED_AUTH hmac"
 fi
 
 #

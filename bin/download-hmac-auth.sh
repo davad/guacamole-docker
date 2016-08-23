@@ -1,5 +1,6 @@
+#!/bin/sh -e
 #
-# Copyright (C) 2015 Glyptodon LLC
+# Copyright (C) 2016 Glyptodon LLC
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +21,38 @@
 # THE SOFTWARE.
 #
 
+##
+## @fn download-ldap-auth.sh
+##
+## Downloads LDAP authentication support. The LDAP authentication .jar file
+## will be placed within the specified destination directory.
+##
+## @param VERSION
+##     The version of guacamole-auth-ldap to download, such as "0.9.6".
+##
+## @param DESTINATION
+##     The directory to save downloaded files within.
+##
+
+VERSION="$1"
+DESTINATION="$2"
+
 #
-# Dockerfile for guacamole-client
+# Use ldap/ subdirectory within DESTINATION.
 #
 
-# Start from Tomcat image
-FROM tomcat:8.0.20-jre7
-MAINTAINER Michael Jumper <mike.jumper@guac-dev.org>
+DESTINATION="$DESTINATION/hmac"
 
-# Version info
-ENV \
-    GUAC_VERSION=0.9.9      \
-    GUAC_JDBC_VERSION=0.9.9 \
-    GUAC_LDAP_VERSION=0.9.9 \
-    GUAC_HMAC_VERSION=1.0.2
+#
+# Create destination, if it does not yet exist
+#
 
-# Add configuration scripts
-COPY bin /opt/guacamole/bin/
+mkdir -p "$DESTINATION"
 
-# Download and install latest guacamole-client and authentication
-RUN \
-    /opt/guacamole/bin/download-guacamole.sh "$GUAC_VERSION" /usr/local/tomcat/webapps && \
-    /opt/guacamole/bin/download-jdbc-auth.sh "$GUAC_JDBC_VERSION" /opt/guacamole       && \
-    /opt/guacamole/bin/download-ldap-auth.sh "$GUAC_LDAP_VERSION" /opt/guacamole       && \
-    /opt/guacamole/bin/download-hmac-auth.sh "$GUAC_HMAC_VERSION" /opt/guacamole
+#
+# Download Guacamole LDAP auth
+#
 
-# Start Guacamole under Tomcat, listening on 0.0.0.0:8080
-EXPOSE 8080
-CMD ["/opt/guacamole/bin/start.sh" ]
+echo "Downloading HMAC auth version $VERSION ..."
+curl -L "https://github.com/davad/guacamole-auth-hmac/releases/download/v$VERSION/guacamole-auth-hmac-$VERSION.jar" \
+ -o "$DESTINATION/guacamole-auth-hmac-$VERSION.jar"
