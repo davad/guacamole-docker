@@ -30,10 +30,8 @@ MAINTAINER Michael Jumper <mike.jumper@guac-dev.org>
 
 # Version info
 ENV \
-    GUAC_VERSION=0.9.9      \
-    GUAC_JDBC_VERSION=0.9.9 \
-    GUAC_LDAP_VERSION=0.9.9 \
-    GUAC_HMAC_VERSION=1.0.2
+    GUAC_VERSION=0.8.1      \
+    GUAC_HMAC_VERSION=0.8.1
 
 # Add configuration scripts
 COPY bin /opt/guacamole/bin/
@@ -41,8 +39,6 @@ COPY bin /opt/guacamole/bin/
 # Download and install latest guacamole-client and authentication
 RUN \
     /opt/guacamole/bin/download-guacamole.sh "$GUAC_VERSION" /usr/local/tomcat/webapps && \
-    /opt/guacamole/bin/download-jdbc-auth.sh "$GUAC_JDBC_VERSION" /opt/guacamole       && \
-    /opt/guacamole/bin/download-ldap-auth.sh "$GUAC_LDAP_VERSION" /opt/guacamole       && \
     /opt/guacamole/bin/download-hmac-auth.sh "$GUAC_HMAC_VERSION" /opt/guacamole
 
 # Start Guacamole under Tomcat, listening on 0.0.0.0:8080
