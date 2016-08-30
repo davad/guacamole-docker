@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 #
 # Copyright (C) 2015 Glyptodon LLC
 #
@@ -323,6 +323,70 @@ END
 }
 
 ##
+## Adds properties to guacamole.properties for noauth
+##
+associate_noauth() {
+
+    # Verify required parameters are present
+    if [ -z "$NOAUTH_HOSTNAMES" ]; then
+        cat <<END
+FATAL: Missing required environment variables
+-------------------------------------------------------------------------------
+If using noauth authentication, you must provide the following environment
+variables:
+
+    NOAUTH_HOSTNAMES        list of connection hostnames
+END
+        exit 1;
+    fi
+
+    # Create noauth config (assumes RDP)
+    NOAUTH_CONFIG="$GUACAMOLE_HOME/noauth-config.xml"
+    IFS=', ' read -r -a hosts <<< "$NOAUTH_HOSTNAMES"
+
+    if [ -n "$NOAUTH_USERNAMES" ]; then
+      IFS=', ' read -r -a users <<< "$NOAUTH_USERNAMES"
+    fi
+
+    if [ -n "$NOAUTH_PASSWORDS" ]; then
+      IFS=', ' read -r -a passwords <<< "$NOAUTH_PASSWORDS"
+    fi
+
+    if [ -n "$NOAUTH_REMOTEAPPS" ]; then
+      IFS=', ' read -r -a remote_apps <<< "$NOAUTH_REMOTEAPPS"
+    fi
+
+    function join { local IFS="$1"; shift; echo "$*"; }
+
+    for i in $(seq 0 $(expr ${#hosts[@]} - 1) ); do
+      configs[$i]=$(cat <<EOF
+<config name="$i" protocol="rdp">
+  <param name="hostname"   value="${hosts[$i]}" />
+  <param name="port"       value="3389" />
+  <param name="username"   value="${users[$i]}" />
+  <param name="password"   value="${passwords[$i]}" />
+  <param name="remote-app" value="${remote_apps[$i]}" />
+  <param name="security"   value="${NOAUTH_SECURITY}" />
+  <param name="ignore-cert" value="${NOAUTH_CERT}" />
+</config>
+EOF
+)
+    done
+
+
+    configs=`join ' ' ${configs[@]}`
+    configs="<configs>${configs}</configs>"
+    echo $configs > $NOAUTH_CONFIG
+
+    # Update config file
+    set_property          "noauth-config"        "$NOAUTH_CONFIG"
+
+    # Add required .jar files to GUACAMOLE_EXT
+    ln -s /opt/guacamole/noauth/guacamole-auth-*.jar "$GUACAMOLE_EXT"
+
+}
+
+##
 ## Adds properties to guacamole.properties which select the HMAC
 ## authentication provider.
 ##
@@ -422,6 +486,12 @@ fi
 if [ -n "$HMAC_SECRET" ]; then
     associate_hmac
     INSTALLED_AUTH="$INSTALLED_AUTH hmac"
+fi
+
+# use noauth if specified
+if [ -n "$NOAUTH_HOSTNAMES" ]; then
+    associate_noauth
+    INSTALLED_AUTH="$INSTALLED_AUTH noauth"
 fi
 
 #

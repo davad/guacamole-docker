@@ -1,3 +1,4 @@
+#!/bin/sh -e
 #
 # Copyright (C) 2015 Glyptodon LLC
 #
@@ -20,36 +21,40 @@
 # THE SOFTWARE.
 #
 
+##
+## @fn download-noauth-auth.sh
+##
+## Downloads the noauth extension
+##
+## @param VERSION
+##     The version of guacamole-auth-noauth to download, such as "0.9.6".
+##
+## @param DESTINATION
+##     The directory to save downloaded files within. Note that this script
+##     will create database-specific subdirectories within this directory,
+##     and downloaded files will be thus grouped by their respected database
+##     types.
+##
+
+VERSION="$1"
+DESTINATION="$2"
+
 #
-# Dockerfile for guacamole-client
+# Create destination, if it does not yet exist
 #
 
-# Start from Tomcat image
-FROM tomcat:8.0.20-jre7
-MAINTAINER Michael Jumper <mike.jumper@guac-dev.org>
+DESTINATION="$DESTINATION/noauth"
+mkdir -p "$DESTINATION"
 
-# Version info
-ENV \
-    GUAC_VERSION=0.9.9      \
-    GUAC_JDBC_VERSION=0.9.9 \
-    GUAC_LDAP_VERSION=0.9.9 \
-    GUAC_NOAUTH_VERSION=0.9.9 \
-    GUAC_HMAC_VERSION=1.0.2
+#
+# Download Guacamole noauth auth
+#
 
-# Add download scripts
-COPY bin/download* /opt/guacamole/bin/
-
-# Download and install latest guacamole-client and authentication
-RUN \
-    /opt/guacamole/bin/download-guacamole.sh "$GUAC_VERSION" /usr/local/tomcat/webapps && \
-    /opt/guacamole/bin/download-jdbc-auth.sh "$GUAC_JDBC_VERSION" /opt/guacamole       && \
-    /opt/guacamole/bin/download-ldap-auth.sh "$GUAC_LDAP_VERSION" /opt/guacamole       && \
-    /opt/guacamole/bin/download-noauth-auth.sh "$GUAC_NOAUTH_VERSION" /opt/guacamole   && \
-    /opt/guacamole/bin/download-hmac-auth.sh "$GUAC_HMAC_VERSION" /opt/guacamole
-
-# Add the rest of the scripts
-COPY bin /opt/guacamole/bin/
-
-# Start Guacamole under Tomcat, listening on 0.0.0.0:8080
-EXPOSE 8080
-CMD ["/opt/guacamole/bin/start.sh" ]
+echo "Downloading noauth auth version $VERSION ..."
+curl -L "http://sourceforge.net/projects/guacamole/files/current/extensions/guacamole-auth-noauth-$VERSION.tar.gz" | \
+tar -xz                  \
+    -C "$DESTINATION"    \
+    --wildcards          \
+    --no-anchored        \
+    --strip-components=1 \
+    "*.jar"
