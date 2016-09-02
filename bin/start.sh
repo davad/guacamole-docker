@@ -405,9 +405,11 @@ END
         exit 1;
     fi
 
+    HMAC_TIMESTAMP="${HMAC_TIMESTAMP:-600000}"
+
     # Update config file
     set_property          "secret-key"           "$HMAC_SECRET"
-    set_property          "timestamp-age-limit"  "3024000000"
+    set_property          "timestamp-age-limit"  "$HMAC_TIMESTAMP"
 
     # Add required .jar files to GUACAMOLE_EXT
     ln -s /opt/guacamole/hmac/guacamole-auth-*.jar "$GUACAMOLE_EXT"
