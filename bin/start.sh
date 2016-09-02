@@ -406,7 +406,6 @@ END
     fi
 
     # Update config file
-    set_property          "auth-provider"        "com.stephensugden.guacamole.net.hmac.HmacAuthenticationProvider"
     set_property          "secret-key"           "$HMAC_SECRET"
     set_property          "timestamp-age-limit"  "3024000000"
 
