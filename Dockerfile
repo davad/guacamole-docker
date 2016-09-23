@@ -34,7 +34,7 @@ ENV \
     GUAC_JDBC_VERSION=0.9.9 \
     GUAC_LDAP_VERSION=0.9.9 \
     GUAC_NOAUTH_VERSION=0.9.9 \
-    GUAC_HMAC_VERSION=1.0.2
+    GUAC_HMAC_VERSION=1.0.3
 
 # Add download scripts
 COPY bin/download* /opt/guacamole/bin/
