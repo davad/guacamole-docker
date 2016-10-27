@@ -34,10 +34,13 @@ ENV \
     GUAC_JDBC_VERSION=0.9.9 \
     GUAC_LDAP_VERSION=0.9.9 \
     GUAC_NOAUTH_VERSION=0.9.9 \
-    GUAC_HMAC_VERSION=1.0.3
+    GUAC_HMAC_VERSION=1.0.3 \
+    GUAC_ENCRYPTEDURL_VERSION=1.0.4
 
-# Add download scripts
+# Add scripts to put core and extensions in place
 COPY bin/download* /opt/guacamole/bin/
+COPY bin/setup* /opt/guacamole/bin/
+COPY guacamole-auth-encryptedurl-$GUAC_ENCRYPTEDURL_VERSION.jar /tmp/
 
 # Download and install latest guacamole-client and authentication
 RUN \
@@ -45,7 +48,8 @@ RUN \
     /opt/guacamole/bin/download-jdbc-auth.sh "$GUAC_JDBC_VERSION" /opt/guacamole       && \
     /opt/guacamole/bin/download-ldap-auth.sh "$GUAC_LDAP_VERSION" /opt/guacamole       && \
     /opt/guacamole/bin/download-noauth-auth.sh "$GUAC_NOAUTH_VERSION" /opt/guacamole   && \
-    /opt/guacamole/bin/download-hmac-auth.sh "$GUAC_HMAC_VERSION" /opt/guacamole
+    /opt/guacamole/bin/download-hmac-auth.sh "$GUAC_HMAC_VERSION" /opt/guacamole       && \
+    /opt/guacamole/bin/setup-encryptedurl-auth.sh "$GUAC_ENCRYPTEDURL_VERSION" /opt/guacamole
 
 # Add the rest of the scripts
 COPY bin /opt/guacamole/bin/

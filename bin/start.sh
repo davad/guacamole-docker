@@ -416,6 +416,36 @@ END
 
 }
 
+##
+## Adds properties to guacamole.properties which select the encryptedurl
+## authentication provider.
+##
+associate_encryptedurl() {
+
+    # Verify required parameters are present
+    if [ -z "$ENCRYPTEDURL_SECRET" ]; then
+        cat <<END
+FATAL: Missing required environment variables
+-------------------------------------------------------------------------------
+If using ENCRYPTEDURL authentication, you must provide the following environment
+variables:
+
+    ENCRYPTEDURL_SECRET        The shared token used to sign messages.
+END
+        exit 1;
+    fi
+
+    ENCRYPTEDURL_TIMESTAMP="${ENCRYPTEDURL_TIMESTAMP:-600000}"
+
+    # Update config file
+    set_property          "secret-key"           "$ENCRYPTEDURL_SECRET"
+    set_property          "timestamp-age-limit"  "$ENCRYPTEDURL_TIMESTAMP"
+
+    # Add required .jar files to GUACAMOLE_EXT
+    ln -s /opt/guacamole/encryptedurl/guacamole-auth-*.jar "$GUACAMOLE_EXT"
+
+}
+
 
 ##
 ## Starts Guacamole under Tomcat, replacing the current process with the
@@ -487,6 +517,12 @@ fi
 if [ -n "$HMAC_SECRET" ]; then
     associate_hmac
     INSTALLED_AUTH="$INSTALLED_AUTH hmac"
+fi
+
+# use encryptedurl auth if specified
+if [ -n "$ENCRYPTEDURL_SECRET" ]; then
+    associate_encryptedurl
+    INSTALLED_AUTH="$INSTALLED_AUTH encryptedurl"
 fi
 
 # use noauth if specified
