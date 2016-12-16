@@ -35,7 +35,7 @@ ENV \
     GUAC_LDAP_VERSION=0.9.9 \
     GUAC_NOAUTH_VERSION=0.9.9 \
     GUAC_HMAC_VERSION=1.0.3 \
-    GUAC_ENCRYPTEDURL_VERSION=1.0.4
+    GUAC_ENCRYPTEDURL_VERSION=1.0.5
 
 # Add scripts to put core and extensions in place
 COPY bin/download* /opt/guacamole/bin/
